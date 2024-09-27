@@ -37,3 +37,11 @@ sky:
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+
+#pagehelper:
+#  # 指定数据库的类型。
+#  dialect: mysql
+#  # 控制分页参数是否合理化处理。
+#  reasonable: true
+#  # PageHelper 会对传入的页码和页大小进行合理化处理，避免用户传入不合法的页码或页大小。
+#  support-methods-arguments: true

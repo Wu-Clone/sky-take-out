@@ -22,6 +22,7 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
  * 将JSON解析为Java对象的过程称为 [从JSON反序列化Java对象]
  * 从Java对象生成JSON的过程称为 [序列化Java对象到JSON]
  */
+// 一个对象序列化器，比较固定的写法
 public class JacksonObjectMapper extends ObjectMapper {
 
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
@@ -31,11 +32,15 @@ public class JacksonObjectMapper extends ObjectMapper {
 
     public JacksonObjectMapper() {
         super();
-        //收到未知属性时不报异常
+        //收到未知属性时不报异常，解决不完全匹配的Json存在的问题
         this.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         //反序列化时，属性不存在的兼容处理
         this.getDeserializationConfig().withoutFeatures(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+//        这段代码确实是在使用工厂方法为 JacksonObjectMapper 添加自定义的转换规则。
+//        这样，当 Jackson 在处理 LocalDateTime、LocalDate 和 LocalTime 类型时，就会按照你指定的格式进行转换。
+//        这使得在序列化和反序列化过程中，可以更灵活地处理日期和时间类型数据，符合你应用的具体需求。
 
         SimpleModule simpleModule = new SimpleModule()
                 .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_TIME_FORMAT)))
