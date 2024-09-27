@@ -25,6 +25,7 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
 // 一个对象序列化器，比较固定的写法
 public class JacksonObjectMapper extends ObjectMapper {
 
+    // 两种格式可选
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
     //public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
