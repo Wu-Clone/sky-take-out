@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -75,4 +76,19 @@ public class DishController {
         DishVO dishVO = dishService.getByIdWithFlavor(id);
         return Result.success(dishVO);
     }
+
+    /**
+     * 修改菜品
+     * @param dishDTO
+     * @return
+     */
+
+    @PutMapping
+    @ApiOperation("修改菜品及其口味")
+    public Result updateDishWithFlavor(@RequestBody DishDTO dishDTO){
+        log.info("修改菜品：{}",dishDTO);
+        dishService.updateWithFlavor(dishDTO);
+        return Result.success();
+    }
 }
+
