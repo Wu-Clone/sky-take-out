@@ -38,6 +38,9 @@ public interface SetmealMapper {
     @Delete("delete from setmeal where id = #{id}")
     void deleteById(Long id);
 
+    @AutoFill(OperationType.UPDATE)
+    void update(Setmeal setmeal);
+
     /**
      * 通过dish id查询对应套餐的id （批量操作）
      * @param ids
