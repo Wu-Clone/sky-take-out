@@ -1,12 +1,13 @@
 package com.sky.mapper;
 
+import com.sky.annotation.AutoFill;
+import com.sky.entity.Setmeal;
+import com.sky.enumeration.OperationType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
-
 @Mapper
-public interface SetMealMapper {
+public interface SetmealMapper {
 
     /**
      * 根据分类id查询套餐的数量
@@ -16,10 +17,13 @@ public interface SetMealMapper {
     @Select("select count(id) from setmeal where category_id = #{id}")
     Integer countByCategoryId(Long id);
 
+    @AutoFill(OperationType.INSERT)
+    void insert(Setmeal setmeal);
+
     /**
      * 通过dish id查询对应套餐的id （批量操作）
      * @param ids
      * @return
      */
-    List<Long> getSetMealIdsByDishIds(List<Long> ids);
+    //List<Long> getSetMealIdsByDishIds(List<Long> ids);
 }
