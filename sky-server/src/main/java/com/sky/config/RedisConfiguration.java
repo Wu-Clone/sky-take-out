@@ -19,6 +19,9 @@ public class RedisConfiguration {
         // 设置redis连接工厂
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         // 设置redis的key序列化器
+        // 默认的key序列化器为
+        //JdkSerializationRedisSerializer，导致我们存到Redis中后的数据和原始数据有差别，故设置为
+        //StringRedisSerializer序列化器。
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         return redisTemplate;
     }
