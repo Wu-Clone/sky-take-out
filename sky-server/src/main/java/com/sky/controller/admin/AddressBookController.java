@@ -46,6 +46,14 @@ public class AddressBookController {
         return Result.success(addressBook);
     }
 
+    @PutMapping
+    @ApiOperation("根据id修改地址")
+    public Result update(@RequestBody AddressBook addressBook) {
+        addressBookService.update(addressBook);
+        return Result.success();
+    }
+
+
     //设置默认地址
     @PutMapping("/default")
     @ApiOperation("设置默认地址")
