@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 @RestController
@@ -65,5 +66,11 @@ public class ReportController {
         log.info("=====================================================================");
         log.info("{}{}", begin, end);
         return Result.success(reportService.getSalesTop10(begin,end));
+    }
+
+    @GetMapping("/export")
+    @ApiOperation("导出数据运营报表")
+    public void export(HttpServletResponse response){
+        reportService.exportBusinessData(response);
     }
 }
