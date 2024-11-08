@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
@@ -21,6 +22,7 @@ import com.sky.service.OrderService;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,9 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +46,8 @@ public class OrderServiceImpl implements OrderService {
     private ShoppingCartMapper shoppingCartMapper;
     @Autowired
     private AddressBookMapper addressBookMapper;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
 
     @Override
@@ -71,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
 
         //构造订单数据
         Orders order = new Orders();
-        BeanUtils.copyProperties(ordersSubmitDTO,order);
+        BeanUtils.copyProperties(ordersSubmitDTO, order);
         order.setPhone(addressBook.getPhone());
         order.setAddress(addressBook.getDetail());
         order.setConsignee(addressBook.getConsignee());
@@ -126,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderVO> list = new ArrayList<>();
 
         // 查询出订单明细，并封装到OrderVO 进行响应
-        if(page != null && page.getTotal() > 0){
+        if (page != null && page.getTotal() > 0) {
             for (Orders order : page) {
                 // 订单id
                 Long orderId = order.getId();
@@ -192,7 +198,7 @@ public class OrderServiceImpl implements OrderService {
         Orders ordersDB = orderMapper.getById(id);
 
         //校验订单是否存在
-        if(ordersDB == null){
+        if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
         //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
@@ -324,7 +330,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception{
+    public void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception {
         // 根据id查询订单
         Orders ordersDB = orderMapper.getById(ordersCancelDTO.getId());
 
@@ -384,5 +390,42 @@ public class OrderServiceImpl implements OrderService {
         orders.setDeliveryTime(LocalDateTime.now());
 
         orderMapper.update(orders);
+    }
+
+    @Override
+    public void reminder(Long id) {
+        // 查询订单是否存在
+        Orders orders = orderMapper.getById(id);
+        if (orders == null){
+            throw new OrderBusinessException((MessageConstant.ORDER_NOT_FOUND));
+        }
+        // 基于webSocket
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", 2);//2代表用户催单
+        map.put("orderId", id);
+        map.put("content", "订单号：" + orders.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+    }
+
+
+    public void paySuccess(String outTradeNo) {
+        // 当前登录用户id
+        Long userId = BaseContext.getCurrentId();
+        //根据订单号查询当前用户的订单
+        Orders ordersDB = orderMapper.getByNumberAndUserId(outTradeNo, userId);
+        // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
+        Orders order = Orders.builder()
+                .id(ordersDB.getId())
+                .status(Orders.TO_BE_CONFIRMED)
+                .payStatus(Orders.PAID)
+                .checkoutTime(LocalDateTime.now())
+                .build();
+
+        orderMapper.update(order);
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", 1);
+        map.put("orderId", order.getId());
+        map.put("content", "订单号" + outTradeNo);
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 }
